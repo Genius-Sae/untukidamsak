@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🛸 Admin Panel — Space Memories</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #020408;
+      --surface: #0a1628;
+      --surface2: #0f1f3d;
+      --cyan: #00d4ff;
+      --pink: #ff2d78;
+      --violet: #8b5cf6;
+      --orange: #ff6b35;
+      --gold: #ffd700;
+      --text: #e8f4fd;
+      --text-dim: rgba(232,244,253,0.5);
+      --border: rgba(0,212,255,0.2);
+      --font-h: 'Orbitron', sans-serif;
+      --font-b: 'Rajdhani', sans-serif;
+      --font-m: 'Space Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-b);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    /* Stars background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 50%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(2px 2px at 10% 60%, rgba(0,212,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 70% 40%, rgba(255,45,120,0.3) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .admin-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 20px 100px;
+    }
+    /* Header */
+    .admin-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 30px;
+      background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(139,92,246,0.05));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+    }
+    .admin-header h1 {
+      font-family: var(--font-h);
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      background: linear-gradient(135deg, var(--cyan), var(--pink), var(--violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    .admin-header p {
+      font-family: var(--font-m);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+    }
+    /* Tabs */
+    .admin-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .admin-tab {
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      font-family: var(--font-m);
+      font-size: 0.72rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.3s;
+      letter-spacing: 1px;
+    }
+    .admin-tab:hover { border-color: var(--cyan); color: var(--cyan); }
+    .admin-tab.active {
+      background: rgba(0,212,255,0.1);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 15px rgba(0,212,255,0.2);
+    }
+    /* Panels */
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+    /* Cards */
+    .admin-card {
+      background: rgba(10,22,40,0.8);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+    .admin-card h3 {
+      font-family: var(--font-h);
+      font-size: 0.85rem;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    /* Form elements */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .form-row.single { grid-template-columns: 1fr; }
+    @media(max-width:600px) { .form-row { grid-template-columns: 1fr; } }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-family: var(--font-m);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .form-group input,
+    .form-group textarea {
+      background: rgba(6,13,31,0.8);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font-b);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0,212,255,0.15);
+    }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    /* Planet/Album grids */
+    .planet-grid, .album-grid, .playlist-grid, .story-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .planet-item, .album-item, .playlist-item-admin, .story-item-admin {
+      background: rgba(6,13,31,0.6);
+      border: 1px solid rgba(0,212,255,0.1);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .planet-item-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .planet-badge {
+      font-size: 1.4rem;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .planet-name {
+      font-family: var(--font-h);
+      font-size: 0.8rem;
+      color: var(--cyan);
+      letter-spacing: 1px;
+    }
+    .photo-upload-area {
+      border: 2px dashed rgba(0,212,255,0.25);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .photo-upload-area:hover {
+      border-color: var(--cyan);
+      background: rgba(0,212,255,0.03);
+    }
+    .photo-upload-area input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .photo-upload-area p {
+      font-family: var(--font-m);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+    .photo-preview {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--cyan);
+      display: none;
+      margin: 0 auto 8px;
+    }
+    /* Buttons */
+    .btn {
+      padding: 10px 22px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-h);
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+    }
+    .btn-cyan {
+      background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.1));
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+    }
+    .btn-cyan:hover { background: rgba(0,212,255,0.25); box-shadow: 0 0 20px rgba(0,212,255,0.3); }
+    .btn-pink {
+      background: linear-gradient(135deg, var(--pink), var(--violet));
+      color: white;
+      box-shadow: 0 0 20px rgba(255,45,120,0.3);
+    }
+    .btn-pink:hover { transform: translateY(-2px); box-shadow: 0 0 35px rgba(255,45,120,0.5); }
+    .btn-sm { padding: 6px 14px; font-size: 0.65rem; }
+    /* Save bar */
+    .save-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(6,13,31,0.97);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      z-index: 100;
+    }
+    .save-bar-text {
+      font-family: var(--font-m);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+    .save-btns { display: flex; gap: 10px; }
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: rgba(10,22,40,0.95);
+      border: 1px solid var(--cyan);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-family: var(--font-m);
+      font-size: 0.75rem;
+      color: var(--cyan);
+      z-index: 999;
+      transform: translateX(200%);
+      transition: transform 0.4s;
+      box-shadow: 0 0 30px rgba(0,212,255,0.2);
+    }
+    .toast.show { transform: translateX(0); }
+    /* Preview link */
+    .preview-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: rgba(255,45,120,0.1);
+      border: 1px solid var(--pink);
+      border-radius: 10px;
+      color: var(--pink);
+      text-decoration: none;
+      font-family: var(--font-m);
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+    }
+    .preview-link:hover {
+      background: rgba(255,45,120,0.2);
+      box-shadow: 0 0 20px rgba(255,45,120,0.3);
+    }
+    /* Collapse */
+    .collapse-header {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .collapse-arrow { transition: transform 0.3s; }
+    .collapse-body { overflow: hidden; max-height: 0; transition: max-height 0.4s ease; }
+    .collapse-body.open { max-height: 2000px; }
+    .collapse-arrow.open { transform: rotate(180deg); }
+    /* Playlist add btn */
+    .add-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      border: 2px dashed rgba(0,212,255,0.25);
+      background: transparent;
+      border-radius: 10px;
+      color: var(--text-dim);
+      font-family: var(--font-m);
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 1px;
+    }
+    .add-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    hr.divider { border: none; border-top: 1px solid rgba(0,212,255,0.08); margin: 10px 0; }
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast">✅ Data berhasil disimpan!</div>
+
+<div class="admin-wrap">
+  <!-- Header -->
+  <div class="admin-header">
+    <h1>🛸 Admin Panel</h1>
+    <p>SPACE MEMORIES — KELOLA KONTEN WEBSITE</p>
+    <br>
+    <a class="preview-link" href="index.html" target="_blank">🚀 Buka Website →</a>
+  </div>
+
+  <!-- Tabs -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="showTab('general')">⚙️ Umum</button>
+    <button class="admin-tab" onclick="showTab('planets')">🪐 Planet</button>
+    <button class="admin-tab" onclick="showTab('albums')">📸 Album</button>
+    <button class="admin-tab" onclick="showTab('music')">🎵 Musik</button>
+    <button class="admin-tab" onclick="showTab('stories')">✨ Cerita</button>
+  </div>
+
+  <!-- ===== GENERAL ===== -->
+  <div class="admin-panel active" id="panel-general">
+    <div class="admin-card">
+      <h3>🌌 Pengaturan Halaman Utama</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Judul Hero</label>
+          <input type="text" id="heroTitle" placeholder="🌌 Ruang Kenangan">
+        </div>
+        <div class="form-group">
+          <label>Subjudul Hero</label>
+          <input type="text" id="heroSubtitle" placeholder="Untuk Menyimpan Kenangan Indah Kita">
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Nama Pasangan (di Matahari)</label>
+          <input type="text" id="coupleNames" placeholder="Only For U, NAMA KAMU 💕">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PLANETS ===== -->
+  <div class="admin-panel" id="panel-planets">
+    <div class="admin-card">
+      <h3>🪐 Galeri Tata Surya — Edit Planet</h3>
+      <p style="font-family:var(--font-m);font-size:0.68rem;color:var(--text-dim);margin-bottom:16px;line-height:1.6;">
+        Setiap planet mewakili kenangan. Upload foto dan isi keterangan untuk setiap planet.
+      </p>
+      <div class="planet-grid" id="planetGrid"></div>
+    </div>
+  </div>
+
+  <!-- ===== ALBUMS ===== -->
+  <div class="admin-panel" id="panel-albums">
+    <div class="admin-card">
+      <h3>📸 Album Foto Kenangan</h3>
+      <div class="album-grid" id="albumGrid"></div>
+    </div>
+  </div>
+
+  <!-- ===== MUSIC ===== -->
+  <div class="admin-panel" id="panel-music">
+    <div class="admin-card">
+      <h3>🎵 Playlist Lagu</h3>
+      <p style="font-family:var(--font-m);font-size:0.68rem;color:var(--text-dim);margin-bottom:16px;line-height:1.6;">
+        Masukkan URL file audio (MP3/OGG) untuk setiap lagu. Bisa dari Google Drive (direct link), Dropbox, atau server sendiri.
+      </p>
+      <div class="playlist-grid" id="playlistGrid"></div>
+      <br>
+      <button class="add-btn" onclick="addTrack()">+ Tambah Lagu</button>
+    </div>
+  </div>
+
+  <!-- ===== STORIES ===== -->
+  <div class="admin-panel" id="panel-stories">
+    <div class="admin-card">
+      <h3>✨ Timeline Cerita</h3>
+      <div class="story-grid" id="storyGrid"></div>
+      <br>
+      <button class="add-btn" onclick="addStory()">+ Tambah Cerita</button>
+    </div>
+  </div>
+</div>
+
+<!-- Save Bar -->
+<div class="save-bar">
+  <span class="save-bar-text">💾 Semua perubahan tersimpan di browser (localStorage)</span>
+  <div class="save-btns">
+    <button class="btn btn-cyan" onclick="resetData()">🔄 Reset</button>
+    <button class="btn btn-pink" onclick="saveAll()">💾 Simpan Semua</button>
+  </div>
+</div>
+
+<script>
+// ===== DEFAULT DATA =====
+const DEFAULT = {
+  heroTitle: '🌌 Ruang Kenangan',
+  heroSubtitle: 'Untuk Menyimpan Kenangan Indah Kita',
+  coupleNames: 'Only For U, MIEE AYAMM 💕',
+  planets: [
+    { name:'Merkurius', emoji:'🟤', color:'#a1887f', label:'Pertemuan Pertama', desc:'Saat pertama kali kita bertemu, dunia terasa berbeda',  photo:null, date:'Jan 2024' },
+    { name:'Venus',     emoji:'🟡', color:'#ffcc80', label:'Kenangan Manis',   desc:'Momen-momen manis yang tak terlupakan',              photo:null, date:'Feb 2024' },
+    { name:'Bumi',      emoji:'🔵', color:'#4fc3f7', label:'Rumah Kita',       desc:'Di mana pun kamu ada, itulah rumahku',              photo:null, date:'Mar 2024' },
+    { name:'Mars',      emoji:'🔴', color:'#ef5350', label:'Petualangan',      desc:'Petualangan seru bersama-sama',                     photo:null, date:'Apr 2024' },
+    { name:'Jupiter',   emoji:'🟠', color:'#ff7043', label:'Momen Besar',      desc:'Pencapaian dan kebanggaan yang kita rayakan',       photo:null, date:'Mei 2024' },
+    { name:'Saturnus',  emoji:'💛', color:'#ffd54f', label:'Hari Spesial',     desc:'Hari-hari paling indah dalam hidup kita',           photo:null, date:'Jun 2024' },
+    { name:'Uranus',    emoji:'🔵', color:'#80deea', label:'Mimpi Kita',       desc:'Mimpi dan harapan yang kita rajut bersama',         photo:null, date:'Jul 2024' },
+    { name:'Neptunus',  emoji:'🔷', color:'#7986cb', label:'Cinta Abadi',      desc:'Cinta kita seperti luar angkasa — tak bertepi',    photo:null, date:'Agt 2024' }
+  ],
+  albums: [
+    { title:'Momen Spesial Pertama', desc:'Awal dari cerita indah kita di bawah langit berbintang', date:'Jan 2024', emoji:'🌌', photo:null },
+    { title:'Petualangan Bersama',   desc:'Menjelajahi semesta berdua terasa jauh lebih bermakna',   date:'Feb 2024', emoji:'🚀', photo:null },
+    { title:'Momen Tertawa',         desc:'Tawa kita bergema di antara bintang-bintang',             date:'Mar 2024', emoji:'😄', photo:null },
+    { title:'Di Bawah Langit Malam', desc:'Duduk bersama memandang bintang-bintang bertebaran',     date:'Apr 2024', emoji:'🌠', photo:null },
+    { title:'Hari Ulang Tahun',      desc:'Merayakan momen spesialmu di bawah cahaya bintang',      date:'Mei 2024', emoji:'🎂', photo:null },
+    { title:'Jalan-jalan Romantis',  desc:'Setiap langkah bersamamu terasa seperti di antara awan', date:'Jun 2024', emoji:'💫', photo:null },
+    { title:'Momen Kejutan',         desc:'Saat kamu memberikanku kejutan paling indah',             date:'Jul 2024', emoji:'🎁', photo:null },
+    { title:'Impian & Harapan',      desc:'Merancang masa depan cerah bersama di bawah sinar bulan',date:'Agt 2024', emoji:'🌙', photo:null }
+  ],
+  playlist: [
+    { title:"A Thousand Years",        artist:"Christina Perri",  duration:"4:45", url:'' },
+    { title:"Perfect",                 artist:"Ed Sheeran",        duration:"4:23", url:'' },
+    { title:"All of Me",               artist:"John Legend",       duration:"4:29", url:'' },
+    { title:"Thinking Out Loud",       artist:"Ed Sheeran",        duration:"4:41", url:'' },
+    { title:"Can't Help Falling in Love", artist:"Elvis Presley",  duration:"3:00", url:'' },
+    { title:"Make You Feel My Love",   artist:"Adele",             duration:"3:32", url:'' }
+  ],
+  stories: [
+    { date:'Januari 2024', emoji:'⭐', title:'Awal Perjalanan',      text:'Di sinilah cerita kita dimulai. Seperti bintang baru yang lahir di galaksi yang luas, kita pertama kali bertemu.' },
+    { date:'Maret 2024',   emoji:'🌙', title:'Malam-malam Indah',    text:'Memandang bulan bersama di bawah langit malam yang penuh bintang, bertukar cerita dan impian.' },
+    { date:'Mei 2024',     emoji:'🪐', title:'Petualangan Dimulai',  text:'Seperti pesawat antariksa yang meluncur ke luar angkasa, kita memulai petualangan hidup bersama.' },
+    { date:'Juli 2024',    emoji:'💫', title:'Momen Tak Terlupakan', text:'Kenangan yang terukir di galaksi hati kita, bersinar terang seperti bintang-bintang di langit malam.' },
+    { date:'Sekarang',     emoji:'🌌', title:'Selamanya Bersama',    text:'Dan seperti semesta yang terus berkembang, cinta kita pun terus tumbuh — tanpa batas, tanpa akhir.' }
+  ]
+};
+
+let DATA = JSON.parse(JSON.stringify(DEFAULT));
+
+function loadSaved() {
+  const s = localStorage.getItem('spaceMemoriesData');
+  if (s) {
+    try {
+      const p = JSON.parse(s);
+      DATA = { ...DEFAULT, ...p, planets: p.planets||DEFAULT.planets, albums: p.albums||DEFAULT.albums, playlist: p.playlist||DEFAULT.playlist, stories: p.stories||DEFAULT.stories };
+    } catch(e) {}
+  }
+}
+
+// ===== TABS =====
+function showTab(id) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===== RENDER GENERAL =====
+function renderGeneral() {
+  document.getElementById('heroTitle').value = DATA.heroTitle;
+  document.getElementById('heroSubtitle').value = DATA.heroSubtitle;
+  document.getElementById('coupleNames').value = DATA.coupleNames;
+}
+
+// ===== RENDER PLANETS =====
+function renderPlanets() {
+  const grid = document.getElementById('planetGrid');
+  grid.innerHTML = '';
+  DATA.planets.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.classList.add('planet-item');
+    div.innerHTML = `
+      <div class="collapse-header" onclick="toggleCollapse('planet-body-${i}')">
+        <div class="planet-item-header" style="margin:0">
+          <div class="planet-badge">${p.emoji}</div>
+          <div>
+            <div class="planet-name">${p.name}</div>
+            <div style="font-size:0.7rem;color:var(--text-dim);font-family:var(--font-m);">${p.label}</div>
+          </div>
+        </div>
+        <span class="collapse-arrow" id="arrow-planet-${i}">▼</span>
+      </div>
+      <div class="collapse-body" id="planet-body-${i}">
+        <hr class="divider">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Label / Judul</label>
+            <input type="text" id="p-label-${i}" value="${p.label}" placeholder="Nama kenangan">
+          </div>
+          <div class="form-group">
+            <label>Tanggal</label>
+            <input type="text" id="p-date-${i}" value="${p.date}" placeholder="Jan 2024">
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="form-group">
+            <label>Deskripsi</label>
+            <textarea id="p-desc-${i}" placeholder="Cerita singkat kenangan ini...">${p.desc}</textarea>
+          </div>
+        </div>
+        <div class="photo-upload-area" onclick="">
+          <input type="file" accept="image/*" onchange="handlePlanetPhoto(event, ${i})">
+          ${p.photo ? `<img class="photo-preview" id="p-prev-${i}" src="${p.photo}" style="display:block;">` : `<img class="photo-preview" id="p-prev-${i}">`}
+          <p id="p-upload-text-${i}">${p.photo ? '✅ Foto sudah diupload — klik untuk ganti' : '📸 Klik untuk upload foto planet ini'}</p>
+        </div>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function handlePlanetPhoto(e, i) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    DATA.planets[i].photo = ev.target.result;
+    const prev = document.getElementById(`p-prev-${i}`);
+    prev.src = ev.target.result;
+    prev.style.display = 'block';
+    document.getElementById(`p-upload-text-${i}`).textContent = '✅ Foto terupload — klik untuk ganti';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ===== RENDER ALBUMS =====
+function renderAlbums() {
+  const grid = document.getElementById('albumGrid');
+  grid.innerHTML = '';
+  DATA.albums.forEach((a, i) => {
+    const div = document.createElement('div');
+    div.classList.add('album-item');
+    div.innerHTML = `
+      <div class="collapse-header" onclick="toggleCollapse('album-body-${i}')">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.3rem;">${a.emoji}</span>
+          <div>
+            <div style="font-family:var(--font-h);font-size:0.78rem;color:var(--cyan);">${a.title}</div>
+            <div style="font-family:var(--font-m);font-size:0.65rem;color:var(--text-dim);">${a.date}</div>
+          </div>
+        </div>
+        <span class="collapse-arrow" id="arrow-album-${i}">▼</span>
+      </div>
+      <div class="collapse-body" id="album-body-${i}">
+        <hr class="divider">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Judul Album</label>
+            <input type="text" id="a-title-${i}" value="${a.title}">
+          </div>
+          <div class="form-group">
+            <label>Tanggal</label>
+            <input type="text" id="a-date-${i}" value="${a.date}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Emoji</label>
+            <input type="text" id="a-emoji-${i}" value="${a.emoji}" style="font-size:1.2rem;">
+          </div>
+          <div class="form-group">
+            <label>Deskripsi</label>
+            <input type="text" id="a-desc-${i}" value="${a.desc}">
+          </div>
+        </div>
+        <div class="photo-upload-area">
+          <input type="file" accept="image/*" onchange="handleAlbumPhoto(event, ${i})">
+          ${a.photo ? `<img src="${a.photo}" id="a-prev-${i}" style="max-width:120px;border-radius:10px;margin:0 auto 8px;display:block;">` : `<img id="a-prev-${i}" style="display:none;">`}
+          <p id="a-upload-text-${i}">${a.photo ? '✅ Foto sudah diupload — klik untuk ganti' : '📸 Klik untuk upload foto album ini'}</p>
+        </div>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function handleAlbumPhoto(e, i) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    DATA.albums[i].photo = ev.target.result;
+    const prev = document.getElementById(`a-prev-${i}`);
+    prev.src = ev.target.result;
+    prev.style.display = 'block';
+    document.getElementById(`a-upload-text-${i}`).textContent = '✅ Foto terupload — klik untuk ganti';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ===== RENDER PLAYLIST =====
+function renderPlaylist() {
+  const grid = document.getElementById('playlistGrid');
+  grid.innerHTML = '';
+  DATA.playlist.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.classList.add('playlist-item-admin');
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-family:var(--font-m);font-size:0.7rem;color:var(--text-dim);">${String(i+1).padStart(2,'0')}</span>
+        <div style="flex:1;font-family:var(--font-h);font-size:0.78rem;color:var(--cyan);">${t.title}</div>
+        <button class="btn btn-sm" style="background:rgba(255,45,120,0.1);border:1px solid var(--pink);color:var(--pink);border-radius:8px;padding:4px 10px;font-size:0.65rem;cursor:pointer;" onclick="removeTrack(${i})">✕</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Judul Lagu</label>
+          <input type="text" id="t-title-${i}" value="${t.title}">
+        </div>
+        <div class="form-group">
+          <label>Artis</label>
+          <input type="text" id="t-artist-${i}" value="${t.artist}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Durasi (contoh: 4:23)</label>
+          <input type="text" id="t-dur-${i}" value="${t.duration}" placeholder="3:30">
+        </div>
+        <div class="form-group">
+          <label>URL Audio (MP3/OGG)</label>
+          <input type="url" id="t-url-${i}" value="${t.url}" placeholder="https://...">
+        </div>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function addTrack() {
+  DATA.playlist.push({ title:'Lagu Baru', artist:'Artis', duration:'3:00', url:'' });
+  renderPlaylist();
+}
+
+function removeTrack(i) {
+  DATA.playlist.splice(i, 1);
+  renderPlaylist();
+}
+
+// ===== RENDER STORIES =====
+function renderStories() {
+  const grid = document.getElementById('storyGrid');
+  grid.innerHTML = '';
+  DATA.stories.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.classList.add('story-item-admin');
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-family:var(--font-h);font-size:0.78rem;color:var(--violet);">${s.emoji} ${s.title}</div>
+        <button style="background:rgba(255,45,120,0.1);border:1px solid var(--pink);color:var(--pink);border-radius:8px;padding:4px 10px;font-size:0.65rem;cursor:pointer;font-family:var(--font-m);" onclick="removeStory(${i})">✕</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Emoji</label>
+          <input type="text" id="s-emoji-${i}" value="${s.emoji}" style="font-size:1.2rem;">
+        </div>
+        <div class="form-group">
+          <label>Tanggal</label>
+          <input type="text" id="s-date-${i}" value="${s.date}">
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Judul</label>
+          <input type="text" id="s-title-${i}" value="${s.title}">
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Cerita</label>
+          <textarea id="s-text-${i}">${s.text}</textarea>
+        </div>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function addStory() {
+  DATA.stories.push({ date:'2024', emoji:'🌟', title:'Cerita Baru', text:'Tuliskan cerita indahmu di sini...' });
+  renderStories();
+}
+
+function removeStory(i) {
+  DATA.stories.splice(i, 1);
+  renderStories();
+}
+
+// ===== COLLAPSE =====
+function toggleCollapse(id) {
+  const body = document.getElementById(id);
+  const arrow = document.getElementById('arrow-' + id.replace('body','').replace('--',''));
+  // Find arrow
+  const allArrows = document.querySelectorAll('.collapse-arrow');
+  body.classList.toggle('open');
+  // Find matching arrow
+  const parentCollapse = body.previousElementSibling;
+  if (parentCollapse) {
+    const arr = parentCollapse.querySelector('.collapse-arrow');
+    if (arr) arr.classList.toggle('open');
+  }
+}
+
+// ===== COLLECT & SAVE =====
+function collectData() {
+  // General
+  DATA.heroTitle = document.getElementById('heroTitle').value || DATA.heroTitle;
+  DATA.heroSubtitle = document.getElementById('heroSubtitle').value || DATA.heroSubtitle;
+  DATA.coupleNames = document.getElementById('coupleNames').value || DATA.coupleNames;
+
+  // Planets
+  DATA.planets.forEach((p, i) => {
+    const l = document.getElementById(`p-label-${i}`);
+    const d = document.getElementById(`p-desc-${i}`);
+    const dt = document.getElementById(`p-date-${i}`);
+    if (l) p.label = l.value;
+    if (d) p.desc = d.value;
+    if (dt) p.date = dt.value;
+  });
+
+  // Albums
+  DATA.albums.forEach((a, i) => {
+    const t = document.getElementById(`a-title-${i}`);
+    const d = document.getElementById(`a-desc-${i}`);
+    const dt = document.getElementById(`a-date-${i}`);
+    const e = document.getElementById(`a-emoji-${i}`);
+    if (t) a.title = t.value;
+    if (d) a.desc = d.value;
+    if (dt) a.date = dt.value;
+    if (e) a.emoji = e.value;
+  });
+
+  // Playlist
+  DATA.playlist.forEach((t, i) => {
+    const ti = document.getElementById(`t-title-${i}`);
+    const ar = document.getElementById(`t-artist-${i}`);
+    const du = document.getElementById(`t-dur-${i}`);
+    const ur = document.getElementById(`t-url-${i}`);
+    if (ti) t.title = ti.value;
+    if (ar) t.artist = ar.value;
+    if (du) t.duration = du.value;
+    if (ur) t.url = ur.value;
+  });
+
+  // Stories
+  DATA.stories.forEach((s, i) => {
+    const ti = document.getElementById(`s-title-${i}`);
+    const dt = document.getElementById(`s-date-${i}`);
+    const em = document.getElementById(`s-emoji-${i}`);
+    const tx = document.getElementById(`s-text-${i}`);
+    if (ti) s.title = ti.value;
+    if (dt) s.date = dt.value;
+    if (em) s.emoji = em.value;
+    if (tx) s.text = tx.value;
+  });
+}
+
+function saveAll() {
+  collectData();
+  localStorage.setItem('spaceMemoriesData', JSON.stringify(DATA));
+  showToast('✅ Data berhasil disimpan! Buka index.html untuk melihat perubahan.');
+}
+
+function resetData() {
+  if (!confirm('Reset semua data ke default? Foto yang sudah diupload akan hilang.')) return;
+  localStorage.removeItem('spaceMemoriesData');
+  DATA = JSON.parse(JSON.stringify(DEFAULT));
+  renderAll();
+  showToast('🔄 Data telah direset ke default.');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function renderAll() {
+  renderGeneral();
+  renderPlanets();
+  renderAlbums();
+  renderPlaylist();
+  renderStories();
+}
+
+// ===== INIT =====
+loadSaved();
+renderAll();
+</script>
+</body>
+</html>

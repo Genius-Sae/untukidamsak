@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌌 Website Kenangan — Galaksi Kita</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪐</text></svg>">
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- Starfield Canvas -->
+<canvas id="starfield"></canvas>
+
+<!-- Navigation Dots -->
+<nav class="nav-dots">
+  <div class="nav-dot active" data-section="hero" data-label="Beranda" onclick="scrollToSection('hero')"></div>
+  <div class="nav-dot" data-section="solar" data-label="Galeri Tata Surya" onclick="scrollToSection('solar')"></div>
+  <div class="nav-dot" data-section="album" data-label="Album Foto" onclick="scrollToSection('album')"></div>
+  <div class="nav-dot" data-section="music" data-label="Playlist" onclick="scrollToSection('music')"></div>
+  <div class="nav-dot" data-section="story" data-label="Cerita Kita" onclick="scrollToSection('story')"></div>
+</nav>
+
+<!-- ===== HERO SECTION ===== -->
+<section class="section" id="hero">
+  <div class="nebula-blob" style="width:400px;height:400px;background:var(--nebula-pink);top:10%;left:5%;animation-delay:0s;"></div>
+  <div class="nebula-blob" style="width:300px;height:300px;background:var(--nebula-cyan);bottom:10%;right:10%;animation-delay:5s;"></div>
+
+  <div class="hero-content fade-in-up visible">
+    <div class="hero-icon">
+      <div class="hero-planet" id="heroPlanet"></div>
+      <div class="hero-ring"></div>
+    </div>
+    <h1 class="hero-title" id="heroTitle">🌌 Ruang Kenangan</h1>
+    <p class="hero-subtitle" id="heroSubtitle">Untuk Menyimpan Kenangan Indah Kita</p>
+    <div class="hero-tags">
+      <a class="hero-tag photos" onclick="scrollToSection('solar')">🪐 Galeri Foto</a>
+      <a class="hero-tag music" onclick="scrollToSection('music')">🎵 Playlist Spesial</a>
+      <a class="hero-tag story" onclick="scrollToSection('story')">✨ Cerita Kita</a>
+    </div>
+    <div class="hero-buttons">
+      <button class="btn-secondary" id="musicToggleBtn" onclick="toggleBgMusic()">🔊 Hentikan Musik</button>
+      <button class="btn-primary" onclick="scrollToSection('solar')">▶ Mulai Eksplorasi</button>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <div class="scroll-hint-arrow"></div>
+  </div>
+</section>
+
+<!-- ===== SOLAR SYSTEM GALLERY ===== -->
+<section class="section" id="solar">
+  <div class="nebula-blob" style="width:350px;height:350px;background:var(--nebula-violet);top:20%;right:5%;animation-delay:3s;"></div>
+
+  <h2 class="solar-title fade-in-up">🪐 Galeri Tata Surya Kita</h2>
+  <p class="solar-subtitle fade-in-up">Setiap planet menyimpan kenangan istimewa — klik untuk melihat</p>
+
+  <div class="solar-system-container fade-in-up">
+    <div class="solar-system" id="solarSystem">
+      <!-- Sun -->
+      <div class="sun" id="sunEl" title="Matahari — Pusat Semesta Kita" onclick="openSunPopup()"></div>
+
+      <!-- Orbits & Planets inserted by JS -->
+    </div>
+  </div>
+
+  <p style="font-family:var(--font-mono);font-size:0.65rem;color:rgba(232,244,253,0.3);margin-top:20px;letter-spacing:2px;text-align:center;">
+    🖱️ KLIK PLANET UNTUK MELIHAT FOTO
+  </p>
+</section>
+
+<!-- ===== ALBUM SECTION ===== -->
+<section class="section" id="album">
+  <h2 class="album-title fade-in-up">📸 Album Foto Kenangan</h2>
+  <p class="album-subtitle fade-in-up">Momen-momen berharga dalam perjalanan kita</p>
+
+  <div class="album-container fade-in-up">
+    <div class="album-card">
+      <div class="album-header">
+        <span class="album-date-badge" id="albumDateBadge">Januari 2024</span>
+        <span class="album-num" id="albumNum">01</span>
+      </div>
+      <div class="album-main-photo">
+        <div class="album-main-photo-placeholder" id="albumMainPhoto">
+          <span>🌌</span>
+        </div>
+      </div>
+      <div class="album-info">
+        <h3 class="album-moment-title" id="albumMomentTitle">Momen Spesial Pertama</h3>
+        <p class="album-moment-desc" id="albumMomentDesc">Awal dari cerita indah kita di bawah langit berbintang</p>
+        <div class="album-thumbnails" id="albumThumbs"></div>
+      </div>
+      <div class="album-nav">
+        <button class="album-nav-btn prev" onclick="changeAlbum(-1)">‹</button>
+        <span style="font-family:var(--font-mono);font-size:0.7rem;color:rgba(232,244,253,0.4);" id="albumCounter">1 / 8</span>
+        <button class="album-nav-btn next" onclick="changeAlbum(1)">›</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MUSIC SECTION ===== -->
+<section class="section" id="music">
+  <div class="nebula-blob" style="width:300px;height:300px;background:var(--nebula-cyan);top:15%;left:5%;animation-delay:7s;"></div>
+
+  <h2 class="music-title fade-in-up">🎵 Playlist Favorit Kita</h2>
+  <p class="music-subtitle fade-in-up">Lagu-lagu yang menemani perjalanan kita</p>
+
+  <div class="music-player fade-in-up">
+    <div class="music-disc-area">
+      <div class="music-disc" id="musicDisc">
+        <div class="music-disc-dot"></div>
+      </div>
+      <div class="music-info">
+        <div class="music-track-name" id="musicTrackName">Pilih Lagu</div>
+        <div class="music-track-sub" id="musicTrackSub">Klik lagu untuk memutar</div>
+      </div>
+    </div>
+
+    <div class="music-progress-area">
+      <div class="music-progress-bar" id="progressBar" onclick="seekMusic(event)">
+        <div class="music-progress-fill" id="progressFill"></div>
+      </div>
+      <div class="music-times">
+        <span id="currentTime">0:00</span>
+        <span id="totalTime">0:00</span>
+      </div>
+    </div>
+
+    <div class="music-controls">
+      <button class="music-btn" onclick="shuffleMusic()" title="Acak" id="shuffleBtn">🔀</button>
+      <button class="music-btn" onclick="prevTrack()" title="Sebelumnya">⏮</button>
+      <button class="music-btn-play" onclick="togglePlay()" id="playBtn">▶</button>
+      <button class="music-btn" onclick="nextTrack()" title="Berikutnya">⏭</button>
+      <button class="music-btn" onclick="toggleRepeat()" title="Ulang" id="repeatBtn">🔁</button>
+    </div>
+
+    <div class="music-volume">
+      <span class="music-vol-icon">🔈</span>
+      <div class="music-vol-slider" onclick="setVolume(event)">
+        <div class="music-vol-fill" id="volFill"></div>
+      </div>
+      <span class="music-vol-icon">🔊</span>
+    </div>
+
+    <div class="music-playlist" id="playlist"></div>
+  </div>
+</section>
+
+<!-- ===== STORY SECTION ===== -->
+<section class="section" id="story">
+  <h2 class="story-title fade-in-up">✨ Cerita Kita</h2>
+  <p class="story-subtitle fade-in-up">Setiap momen adalah bintang dalam galaksi kenangan kita</p>
+
+  <div class="story-timeline fade-in-up" id="storyTimeline"></div>
+</section>
+
+<!-- Photo Popup -->
+<div class="photo-popup" id="photoPopup">
+  <button class="photo-popup-close" onclick="closePopup()">✕</button>
+  <div class="photo-popup-img" id="popupImg" style="width:300px;height:300px;background:linear-gradient(135deg,rgba(26,5,51,0.9),rgba(10,22,40,0.9));display:flex;align-items:center;justify-content:center;font-size:4rem;">🌌</div>
+  <div class="photo-popup-info">
+    <div class="photo-popup-title" id="popupTitle">Planet Kenangan</div>
+    <div class="photo-popup-desc" id="popupDesc">Momen istimewa kita</div>
+  </div>
+</div>
+
+<!-- Bottom Tabs -->
+<div class="bottom-tabs">
+  <button class="tab-btn active" onclick="scrollToSection('hero')" id="tab-hero">
+    <span>🏠</span><span>Beranda</span>
+  </button>
+  <button class="tab-btn" onclick="scrollToSection('solar')" id="tab-solar">
+    <span>🪐</span><span>Galeri</span>
+  </button>
+  <button class="tab-btn" onclick="scrollToSection('album')" id="tab-album">
+    <span>📸</span><span>Foto</span>
+  </button>
+  <button class="tab-btn" onclick="scrollToSection('music')" id="tab-music">
+    <span>🎵</span><span>Musik</span>
+  </button>
+  <button class="tab-btn" onclick="scrollToSection('story')" id="tab-story">
+    <span>✨</span><span>Cerita</span>
+  </button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
